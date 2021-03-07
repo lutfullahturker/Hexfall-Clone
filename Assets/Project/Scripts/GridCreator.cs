@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Project.Scripts.ScriptableObject;
 using UnityEngine;
 
@@ -92,6 +93,7 @@ namespace Project.Scripts
             
             //Test method
             // TestNeighbour();
+            // TestHexGroup();
         }
 
         private HexTile GetRandomColorHexagon(Vector3Int pos)
@@ -103,7 +105,7 @@ namespace Project.Scripts
             return null;
         }
 
-        private List<GameObject> GetAllNeighbourHexObjects(Vector2Int posInTable)
+        private Dictionary<NeighbourDirection, Vector2Int> GetAllNeighbourHexObjects(Vector2Int posInTable)
         {
             List<Vector2Int> allPossibleNeighbours = new List<Vector2Int>();
             bool isOddCol = posInTable.x % 2 == 1;
@@ -115,16 +117,37 @@ namespace Project.Scripts
             allPossibleNeighbours.Add(posInTable + (isOddCol ? Vector2Int.right + Vector2Int.down : Vector2Int.right)); // rightBottom
             allPossibleNeighbours.Add(posInTable + (isOddCol ? Vector2Int.right : Vector2Int.right + Vector2Int.up)); // rightTop
 
-            List<GameObject> result = new List<GameObject>();
+            Dictionary<NeighbourDirection, Vector2Int> result = new Dictionary<NeighbourDirection, Vector2Int> ();
 
+            var i = 0;
             foreach (var neighbour in allPossibleNeighbours)
             {
                 if (neighbour.x >= 0 && neighbour.x < gridSize.x && neighbour.y >= 0 && neighbour.y < gridSize.y)
                 {
-                    result.Add(gameTable[neighbour.x][neighbour.y]);
+                    switch (i)
+                    {
+                        case 0:
+                            result[NeighbourDirection.TOP] = neighbour;
+                            break;
+                        case 1:
+                            result[NeighbourDirection.LEFT_TOP] = neighbour;
+                            break;
+                        case 2:
+                            result[NeighbourDirection.LEFT_DOWN] = neighbour;
+                            break;
+                        case 3:
+                            result[NeighbourDirection.DOWN] = neighbour;
+                            break;
+                        case 4:
+                            result[NeighbourDirection.RIGHT_DOWN] = neighbour;
+                            break;
+                        case 5:
+                            result[NeighbourDirection.RIGHT_TOP] = neighbour;
+                            break;
+                    }
                 }
+                ++i;
             }
-
             return result;
         }
         
@@ -134,31 +157,82 @@ namespace Project.Scripts
             var neighbours = gameTable[0][0].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
-                neighbour.GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
             
             neighbours = gameTable[2][3].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
-                neighbour.GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
             
             neighbours = gameTable[7][2].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
-                neighbour.GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
             
             neighbours = gameTable[6][8].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
-                neighbour.GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
             
             neighbours = gameTable[0][7].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
-                neighbour.GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
+            }
+        }
+        
+        // TEST Method for possible Hex groups
+        private void TestHexGroup()
+        {
+            var hexGroups = gameTable[0][0].GetComponent<Hex>().GetAllPossibleHexGroups();
+
+            var group = hexGroups.First();
+            {
+                gameTable[0][0].GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                Debug.Log("[0,0] GroupList size = " + hexGroups.Count);
+            }
+            
+            hexGroups = gameTable[2][3].GetComponent<Hex>().GetAllPossibleHexGroups();
+            group = hexGroups.First();
+
+            {
+                gameTable[2][3].GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                Debug.Log("[2,3] GroupList size = " + hexGroups.Count);
+            }
+            
+            hexGroups = gameTable[7][2].GetComponent<Hex>().GetAllPossibleHexGroups();
+            group = hexGroups.First();
+            {
+                gameTable[7][2].GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                Debug.Log("[7,2] GroupList size = " + hexGroups.Count);
+            }
+            
+            hexGroups = gameTable[6][8].GetComponent<Hex>().GetAllPossibleHexGroups();
+            group = hexGroups.First();
+            {
+                gameTable[6][8].GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                Debug.Log("[6,8] GroupList size = " + hexGroups.Count);
+            }
+            
+            hexGroups = gameTable[0][7].GetComponent<Hex>().GetAllPossibleHexGroups();
+            group = hexGroups.First();
+            {
+                gameTable[0][7].GetComponent<SpriteRenderer>().color = Color.black;
+                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                Debug.Log("[0,7] GroupList size = " + hexGroups.Count);
             }
         }
     }
