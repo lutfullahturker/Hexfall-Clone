@@ -8,9 +8,6 @@ namespace Project.Scripts
     {
         [SerializeField] private LeanFingerSwipe _leftSwipeDetector, _rightSwipeDetector;
         private LeanFingerTap _tapDetector;
-
-        private TouchPhase _touchPhase = TouchPhase.Ended;
-        private Vector3 _touchWorldPos;
         private Camera mainCam;
 
         public enum SwipeDirection
@@ -42,9 +39,9 @@ namespace Project.Scripts
         private void OnTap(LeanFinger finger)
         {
             //We transform the touch position into word space from screen space and store it.
-            _touchWorldPos = mainCam.ScreenToWorldPoint(finger.ScreenPosition);
+            Vector3 touchWorldPos = mainCam.ScreenToWorldPoint(finger.ScreenPosition);
 
-            Vector2 touchWorldPos2D = new Vector2(_touchWorldPos.x, _touchWorldPos.y);
+            Vector2 touchWorldPos2D = new Vector2(touchWorldPos.x, touchWorldPos.y);
             //We now raycast with this information. If we have hit something we can process it.
             RaycastHit2D hitInformation = Physics2D.Raycast(touchWorldPos2D, mainCam.transform.forward);
 
@@ -63,13 +60,13 @@ namespace Project.Scripts
         
         private void OnLeftSwipe(LeanFinger finger)
         {
-            Debug.Log("Left Swiped");
+            // Debug.Log("Left Swiped");
             EventManager.Current.Swiped(SwipeDirection.LeftSwipe, finger.GetStartWorldPosition(-10));
         }
         
         private void OnRightSwipe(LeanFinger finger)
         {
-            Debug.Log("Right Swiped");
+            // Debug.Log("Right Swiped");
             EventManager.Current.Swiped(SwipeDirection.RightSwipe, finger.GetStartWorldPosition(-10));
         }
     }

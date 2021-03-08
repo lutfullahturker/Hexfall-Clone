@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace Project.Scripts
@@ -7,7 +8,7 @@ namespace Project.Scripts
         public Vector2Int mainHex;
         public Vector2Int firstHex;
         public Vector2Int secondHex;
-        public Rotation rotation;
+        public HighlightSpriteRotation highlightSpriteRotation;
         
         public enum RotateDirection
         {
@@ -15,15 +16,15 @@ namespace Project.Scripts
             CounterClockwise
         }
 
-        public enum Rotation
+        public enum HighlightSpriteRotation
         {
             LeftTwo,
             RightTwo
         }
         
-        public HexGroup(Vector2Int _mainHex, Vector2Int _firstHex, Vector2Int _secondHex, Rotation _rotation)
+        public HexGroup(Vector2Int _mainHex, Vector2Int _firstHex, Vector2Int _secondHex, HighlightSpriteRotation _highlightSpriteRotation)
         {
-            rotation = _rotation;
+            highlightSpriteRotation = _highlightSpriteRotation;
             mainHex = _mainHex;
             firstHex = _firstHex;
             secondHex = _secondHex;
