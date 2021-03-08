@@ -23,5 +23,11 @@ namespace Project.Scripts
         {
             onHexagonTouched?.Invoke(selectedHex);
         }
+        
+        public event Action<InputManager.SwipeDirection, Vector2> onSwiped;
+        public void Swiped(InputManager.SwipeDirection direction, Vector2 swipePosition)
+        {
+            onSwiped?.Invoke(direction, swipePosition);
+        }
     }
 }
