@@ -13,7 +13,7 @@ namespace Project.Scripts
         public Vector2Int gridSize = new Vector2Int(8, 9);
 
         private List<Color> hexColorList;
-        private List<List<GameObject>> gameTable;
+        public static List<List<GameObject>> gameTable;
 
         float xOffset = 0.646f;
         float yOffset = 0.710f;
@@ -188,51 +188,40 @@ namespace Project.Scripts
         // TEST Method for possible Hex groups
         private void TestHexGroup()
         {
-            var hexGroups = gameTable[0][0].GetComponent<Hex>().GetAllPossibleHexGroups();
-
-            var group = hexGroups.First();
+            var hexGroup = gameTable[0][0].GetComponent<Hex>().GetSelectedHexGroup();
             {
                 gameTable[0][0].GetComponent<SpriteRenderer>().color = Color.black;
-                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                Debug.Log("[0,0] GroupList size = " + hexGroups.Count);
+                gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
             }
             
-            hexGroups = gameTable[2][3].GetComponent<Hex>().GetAllPossibleHexGroups();
-            group = hexGroups.First();
+            hexGroup = gameTable[2][3].GetComponent<Hex>().GetSelectedHexGroup();
 
             {
                 gameTable[2][3].GetComponent<SpriteRenderer>().color = Color.black;
-                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                Debug.Log("[2,3] GroupList size = " + hexGroups.Count);
+                gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
             }
             
-            hexGroups = gameTable[7][2].GetComponent<Hex>().GetAllPossibleHexGroups();
-            group = hexGroups.First();
+            hexGroup = gameTable[7][2].GetComponent<Hex>().GetSelectedHexGroup();
             {
                 gameTable[7][2].GetComponent<SpriteRenderer>().color = Color.black;
-                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                Debug.Log("[7,2] GroupList size = " + hexGroups.Count);
+                gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
             }
             
-            hexGroups = gameTable[6][8].GetComponent<Hex>().GetAllPossibleHexGroups();
-            group = hexGroups.First();
+            hexGroup = gameTable[6][8].GetComponent<Hex>().GetSelectedHexGroup();
             {
                 gameTable[6][8].GetComponent<SpriteRenderer>().color = Color.black;
-                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                Debug.Log("[6,8] GroupList size = " + hexGroups.Count);
+                gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
             }
             
-            hexGroups = gameTable[0][7].GetComponent<Hex>().GetAllPossibleHexGroups();
-            group = hexGroups.First();
+            hexGroup = gameTable[0][7].GetComponent<Hex>().GetSelectedHexGroup();
             {
                 gameTable[0][7].GetComponent<SpriteRenderer>().color = Color.black;
-                gameTable[group.firstHex.x][group.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[group.secondHex.x][group.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                Debug.Log("[0,7] GroupList size = " + hexGroups.Count);
+                gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
             }
         }
     }
