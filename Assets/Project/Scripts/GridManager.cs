@@ -1,22 +1,37 @@
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using DG.Tweening;
+using Project.Scripts.Helper;
 using Project.Scripts.ScriptableObject;
 using UnityEngine;
 
 namespace Project.Scripts
 {
-    public class GridCreator : MonoBehaviour
+    public class GridManager : MonoBehaviour
     {
-        [SerializeField] private GameObject hexagonPrefab;
-        [SerializeField] private GameObject bombPrefab;
+        private static GridManager _instance;
+        public static GridManager Instance => _instance;
+
+        public List<List<GameObject>> gameTable;
+        public List<HexGroup> allHexGroups;
         public List<HexTile> tiles;
         public Vector2Int gridSize = new Vector2Int(8, 9);
+        [SerializeField] private GameObject hexagonPrefab;
+        [SerializeField] private GameObject bombPrefab;
 
+        private readonly float xOffset = 0.646f * 1.3f;
+        private readonly float yOffset = 0.710f * 1.3f;
         private List<Color> hexColorList;
-        public static List<List<GameObject>> gameTable;
-
-        float xOffset = 0.646f;
-        float yOffset = 0.710f;
+        
+        private void Awake()
+        {
+            if (_instance != null && _instance != this)
+            {
+                Destroy(this.gameObject);
+            } else {
+                _instance = this;
+            }
+        }
 
         // Start is called before the first frame update
         void Start()
@@ -37,57 +52,74 @@ namespace Project.Scripts
             });
 
             CreateGrid();
+            allHexGroups = new HexGroupCalculator(gridSize.x,gridSize.y).GetHexGroupList();
         }
 
-        // Update is called once per frame
-        void Update()
+        public GameObject CreateHexagon(Vector2Int coordinates, bool withAnimation = false)
         {
+            List<HexTile> hexagonList = tiles.FindAll(tile => tile.type == TileType.Hexagon);
+            var destPosition = CalculatePositionFromCoordinate(coordinates);
+            GameObject hexObj = Instantiate(hexagonPrefab, destPosition , Quaternion.identity);
+            if (withAnimation)
+            {
+                hexObj.transform.DOMoveY(9.4f,0);
+                hexObj.transform.DOMoveY(destPosition.y, 0.3f);
+            }
+            // Name the gameobject something sensible.
+            hexObj.name = "Hex (" + coordinates.x + "," + coordinates.y + ")";
+            hexObj.transform.SetParent(transform);
+
+            var randomColoredHex = hexagonList[Random.Range(0, hexagonList.Count)];
+            hexObj.GetComponent<SpriteRenderer>().color = randomColoredHex.color;
+            var hexData = hexObj.GetComponent<Hex>();
+            hexData.color = randomColoredHex.color;
+            hexData.tablePos = coordinates;
+            hexData.neighbours = GetAllNeighbourHexObjects(coordinates);
+
+            return hexObj;
+        }
+        
+        public void MoveHexagon(Hex sourceHex, Vector2Int destinationCoord)
+        {
+            gameTable[destinationCoord.x][destinationCoord.y] = sourceHex.gameObject;
+            sourceHex.tablePos = destinationCoord;
+            sourceHex.neighbours = GetAllNeighbourHexObjects(sourceHex.tablePos);
+            sourceHex.ClearHexGroupList();
+            // Name the gameobject something sensible.
+            sourceHex.name = "Hex (" + destinationCoord.x + "," + destinationCoord.y + ")";
+            sourceHex.transform.DOMove(CalculatePositionFromCoordinate(destinationCoord), 0.3f);
+        }
+
+        public Vector3 CalculatePositionFromCoordinate(Vector2Int coordinates)
+        {
+            float yPos = coordinates.y * yOffset;
+
+            // Is an odd column?
+            if (coordinates.x % 2 == 1)
+            {
+                yPos -= yOffset / 2f;
+            }
+
+            return new Vector3(coordinates.x * xOffset, yPos);
+        }
+
+        public GameObject GetHexGO(Vector2Int coord)
+        {
+            return gameTable[coord.x][coord.y];
+        }
+        
+        public GameObject GetHexGO(int x, int y)
+        {
+            return gameTable[x][y];
         }
 
         private void CreateGrid()
         {
-            List<HexTile> hexagonList = tiles.FindAll(tile => tile.type == TileType.Hexagon);
-
             for (int x = 0; x < gridSize.x; x++)
             {
                 for (int y = 0; y < gridSize.y; y++)
                 {
-                    float yPos = y * yOffset;
-
-                    // Is an odd column?
-                    if (x % 2 == 1)
-                    {
-                        yPos -= yOffset / 2f;
-                    }
-
-                    GameObject hexObj = Instantiate(hexagonPrefab, new Vector3(x * xOffset, yPos), Quaternion.identity);
-
-                    // Name the gameobject something sensible.
-                    hexObj.name = "Hex (" + x + "," + y + ")";
-                    hexObj.transform.SetParent(transform);
-
-                    var randomColoredHex = hexagonList[Random.Range(0, hexagonList.Count)];
-                    hexObj.GetComponent<SpriteRenderer>().color = randomColoredHex.color;
-                    gameTable[x].Add(hexObj);
-                    var hexData = hexObj.GetComponent<Hex>();
-                    hexData.color = randomColoredHex.color;
-                }
-            }
-            FillAllHexData();
-            transform.localScale = new Vector3(1.3f, 1.3f, 1.3f);
-            Vector3 centerPos = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 10));
-            gameObject.transform.position = centerPos;
-        }
-
-        private void FillAllHexData()
-        {
-            for (var i = 0; i < gameTable.Count; ++i)
-            {
-                for (int j = 0; j < gameTable[i].Count; j++)
-                {
-                    var hexData = gameTable[i][j].GetComponent<Hex>();
-                    hexData.tablePos = new Vector2Int(i, j);
-                    hexData.neighbours = GetAllNeighbourHexObjects(hexData.tablePos);
+                    gameTable[x].Add(CreateHexagon(new Vector2Int(x, y)));
                 }
             }
             

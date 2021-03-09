@@ -43,9 +43,9 @@ namespace Project.Scripts
             var bGameObject = table[b.x][b.y];
             var cGameObject = table[c.x][c.y];
             
-            GridManager.Instance.MoveHexagonToEmptyCell(aGameObject.GetComponent<Hex>(), b);
-            GridManager.Instance.MoveHexagonToEmptyCell(bGameObject.GetComponent<Hex>(), c);
-            GridManager.Instance.MoveHexagonToEmptyCell(cGameObject.GetComponent<Hex>(), a);
+            GridManager.Instance.MoveHexagon(aGameObject.GetComponent<Hex>(), b);
+            GridManager.Instance.MoveHexagon(bGameObject.GetComponent<Hex>(), c);
+            GridManager.Instance.MoveHexagon(cGameObject.GetComponent<Hex>(), a);
 
             yield return new WaitForSeconds(rotateDuration);
         }
@@ -62,9 +62,9 @@ namespace Project.Scripts
             var bGameObject = table[b.x][b.y];
             var cGameObject = table[c.x][c.y];
 
-            GridManager.Instance.MoveHexagonToEmptyCell(aGameObject.GetComponent<Hex>(), c);
-            GridManager.Instance.MoveHexagonToEmptyCell(bGameObject.GetComponent<Hex>(), a);
-            GridManager.Instance.MoveHexagonToEmptyCell(cGameObject.GetComponent<Hex>(), b);
+            GridManager.Instance.MoveHexagon(aGameObject.GetComponent<Hex>(), c);
+            GridManager.Instance.MoveHexagon(bGameObject.GetComponent<Hex>(), a);
+            GridManager.Instance.MoveHexagon(cGameObject.GetComponent<Hex>(), b);
 
             yield return new WaitForSeconds(rotateDuration);
         }
