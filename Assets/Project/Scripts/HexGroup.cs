@@ -32,9 +32,9 @@ namespace Project.Scripts
 
         public Vector3 GetCenterPositionOfGroup()
         {
-            var mainHexPosition = GridCreator.gameTable[mainHex.x][mainHex.y].transform.position;
-            var firstHexPosition = GridCreator.gameTable[firstHex.x][firstHex.y].transform.position;
-            var secondHexPosition = GridCreator.gameTable[secondHex.x][secondHex.y].transform.position;
+            var mainHexPosition = GridManager.Instance.gameTable[mainHex.x][mainHex.y].transform.position;
+            var firstHexPosition = GridManager.Instance.gameTable[firstHex.x][firstHex.y].transform.position;
+            var secondHexPosition = GridManager.Instance.gameTable[secondHex.x][secondHex.y].transform.position;
 
             var result = Vector3.zero;
             result += mainHexPosition;
