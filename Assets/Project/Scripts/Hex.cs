@@ -53,52 +53,12 @@ namespace Project.Scripts
             selectedHexGroupIndex = 0;
             isFirstAccessToHexGroupList = true;
         }
-        
-        public IEnumerator Rotate(HexGroup.RotateDirection direction)
+
+        public void ClearHexGroupList()
         {
-            for (int i = 0; i < 3; i++)
-            {
-                yield return StartCoroutine(direction == HexGroup.RotateDirection.Clockwise
-                    ? RotateClockwise()
-                    : RotateCounterClockwise());
-                
-                // check for match
-                // if match successfull - yield break
-            }
+            _allHexGroups = null;
         }
 
-        private IEnumerator RotateCounterClockwise()
-        {
-            const float rotateDuration = 0.3f;
-            var table = GridCreator.gameTable;
-            var a = GetSelectedHexGroup().mainHex;
-            var b = GetSelectedHexGroup().firstHex;
-            var c = GetSelectedHexGroup().secondHex;
-            var positionOfA = table[a.x][a.y].transform.position;
-
-            table[a.x][a.y].transform.DOMove(table[b.x][b.y].transform.position, rotateDuration);
-            table[b.x][b.y].transform.DOMove(table[c.x][c.y].transform.position, rotateDuration);
-            table[c.x][c.y].transform.DOMove(positionOfA, rotateDuration);
-
-            yield return new WaitForSeconds(rotateDuration);
-        }
-
-        private IEnumerator RotateClockwise()
-        {
-            const float rotateDuration = 0.3f;
-            var table = GridCreator.gameTable;
-            var a = GetSelectedHexGroup().mainHex;
-            var b = GetSelectedHexGroup().firstHex;
-            var c = GetSelectedHexGroup().secondHex;
-            var positionOfA = table[a.x][a.y].transform.position;
-
-            table[a.x][a.y].transform.DOMove(table[c.x][c.y].transform.position, rotateDuration);
-            table[c.x][c.y].transform.DOMove(table[b.x][b.y].transform.position, rotateDuration);
-            table[b.x][b.y].transform.DOMove(positionOfA, rotateDuration);
-
-            yield return new WaitForSeconds(rotateDuration);
-        }
-        
         private void GetAllPossibleHexGroups()
         {
             if (_allHexGroups != null)
