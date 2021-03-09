@@ -10,15 +10,27 @@ namespace Project.Scripts
     {
         [SerializeField] private GameObject highlightGameObject;
 
+        public static int Score
+        {
+            get => _score;
+            set
+            {
+                _score = value;
+                EventManager.Current.ScoreUpdated();
+            }
+        }
+
+        private static int _score = 0;
+        private List<List<GameObject>> gameTable => GridManager.Instance.gameTable;
         private Vector2Int? _selectedHexPosition;
         private HexGroup _selectedHexGroup = null;
         private bool _isHexGroupRotating = false;
-        private List<List<GameObject>> gameTable;
+        private RotationHandler _rotationHandler;
 
         // Start is called before the first frame update
         void Start()
         {
-            gameTable = GridCreator.gameTable;
+            _rotationHandler = GetComponent<RotationHandler>();
             EventManager.Current.onHexagonTouched += OnTouchedHexagon;
             EventManager.Current.onSwiped += OnSwiped;
         }
@@ -37,15 +49,12 @@ namespace Project.Scripts
         private IEnumerator RotateCoroutine(InputManager.SwipeDirection swipeDirection, Vector2 swipePos)
         {
             _isHexGroupRotating = true;
-
             var rotateDirection =
                 GetRotateDirection(swipeDirection, _selectedHexGroup.GetCenterPositionOfGroup(), swipePos);
 
             if (_selectedHexPosition.HasValue)
             {
-                yield return StartCoroutine(gameTable[_selectedHexPosition.Value.x][_selectedHexPosition.Value.y]
-                    .GetComponent<Hex>()
-                    .Rotate(rotateDirection));
+                yield return StartCoroutine(_rotationHandler.Rotate(_selectedHexGroup, rotateDirection));
             }
 
             _isHexGroupRotating = false;
@@ -82,7 +91,7 @@ namespace Project.Scripts
 
             if (_selectedHexPosition != null && hexComponent.tablePos != _selectedHexPosition)
             {
-                GridCreator.gameTable[_selectedHexPosition.Value.x][_selectedHexPosition.Value.y].GetComponent<Hex>()
+                gameTable[_selectedHexPosition.Value.x][_selectedHexPosition.Value.y].GetComponent<Hex>()
                     .ResetSelectedHexGroup();
             }
 
@@ -108,7 +117,8 @@ namespace Project.Scripts
             {
                 return;
             }
-            StartCoroutine(RotateCoroutine(swipeDirection,swipePosition));
+
+            StartCoroutine(RotateCoroutine(swipeDirection, swipePosition));
         }
 
         #endregion
