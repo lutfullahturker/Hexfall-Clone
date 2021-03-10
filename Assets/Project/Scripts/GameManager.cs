@@ -8,14 +8,20 @@ namespace Project.Scripts
 {
     public class GameManager : MonoBehaviour
     {
+        #region Private
+
         [SerializeField] private GameObject highlightGameObject;
-        private int _score = 0;
+        public int _score = 0;
         private Vector2Int? _selectedHexPosition;
         private HexGroup _selectedHexGroup = null;
         private RotationHandler _rotationHandler;
         private int divisionBy1000;
         private bool stopInput;
         private List<List<GameObject>> gameTable => GridManager.Instance.gameTable;
+
+        #endregion
+
+        #region Public
 
         public int Score
         {
@@ -33,6 +39,9 @@ namespace Project.Scripts
             }
         }
 
+        #endregion
+
+        #region Unity Methods
 
         // Start is called before the first frame update
         void Start()
@@ -50,6 +59,14 @@ namespace Project.Scripts
             EventManager.Current.onSwiped -= OnSwiped;
         }
 
+        #endregion
+
+        /// <summary>
+        /// Starts the rotation process in the given direction and checks the matches. 
+        /// Called when user swiped.
+        /// </summary>
+        /// <param name="swipeDirection"></param>
+        /// <param name="swipePos">The position which swipe starts on the screen</param>
         private IEnumerator RotateCoroutine(InputManager.SwipeDirection swipeDirection, Vector2 swipePos)
         {
             stopInput = true;
@@ -66,6 +83,14 @@ namespace Project.Scripts
             stopInput = false;
         }
 
+        /// <summary>
+        /// Calculates rotation direction with using selected hexGroups center and swipe start position.
+        /// Rotation direction depends on these positions.
+        /// </summary>
+        /// <param name="swipeDirection"></param>
+        /// <param name="centerPosOfGroup"></param>
+        /// <param name="swipePos">The position which swipe starts on the screen</param>
+        /// <returns></returns>
         private HexGroup.RotateDirection GetRotateDirection(
             InputManager.SwipeDirection swipeDirection,
             Vector2 centerPosOfGroup,
@@ -87,6 +112,9 @@ namespace Project.Scripts
 
         #region Event Callbacks
 
+        /// <summary>
+        /// Called when game ends. Triggers game over animation and destroys all Hexes.
+        /// </summary>
         private void OnGameOver()
         {
             stopInput = true;
@@ -108,22 +136,30 @@ namespace Project.Scripts
                         .OnComplete(() =>
                         {
                             Destroy(hex);
-                            Time.timeScale = 0;
                         });
                 }
             }
         }
 
+        /// <summary>
+        /// Selects touched hexagon and highlight selected hexGroup.
+        /// Every tap on same hexagon switches the selected hexGroups.
+        /// Called when user taps a hexagon.
+        /// </summary>
+        /// <param name="touchedHex">Hexagon gameObject which user touched</param>
         private void OnTouchedHexagon(GameObject touchedHex)
         {
-            // Debug.Log("Touched GO: " + touchedHex.transform.name);
+            Debug.Log("Touched GO: " + touchedHex.transform.name);
+            
             if (stopInput)
                 return;
 
             var hexComponent = touchedHex.GetComponent<Hex>();
+            // if user taps same hex more than once, selected hexGroup will be changed
             _selectedHexGroup = hexComponent.GetNextHexGroup();
             var centerPosition = _selectedHexGroup.GetCenterPositionOfGroup();
 
+            // if touched hex is different from last selected hex, reset selected hexGroup of last selected hex
             if (_selectedHexPosition != null && hexComponent.tablePos != _selectedHexPosition)
             {
                 gameTable[_selectedHexPosition.Value.x][_selectedHexPosition.Value.y].GetComponent<Hex>()
@@ -132,6 +168,8 @@ namespace Project.Scripts
 
             _selectedHexPosition = hexComponent.tablePos;
             highlightGameObject.SetActive(true);
+            
+            // Rotation of highlight sprite depends on which side has 2 hex
             if (_selectedHexGroup.highlightSpriteRotation == HexGroup.HighlightSpriteRotation.LeftTwo)
             {
                 highlightGameObject.transform.DORotate(new Vector3(0f, 0), 0);
@@ -146,6 +184,12 @@ namespace Project.Scripts
             highlightGameObject.transform.position = centerPosition;
         }
 
+        /// <summary>
+        /// Triggers rotation process of selected hexGroup.
+        /// Called when user swipes to any rotation.
+        /// </summary>
+        /// <param name="swipeDirection"></param>
+        /// <param name="swipePosition"></param>
         private void OnSwiped(InputManager.SwipeDirection swipeDirection, Vector2 swipePosition)
         {
             if (stopInput || _selectedHexGroup == null || !_selectedHexPosition.HasValue)
