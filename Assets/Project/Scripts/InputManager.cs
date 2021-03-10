@@ -20,8 +20,6 @@ namespace Project.Scripts
         void Start()
         {
             mainCam = Camera.main;
-            Input.multiTouchEnabled = false;
-            Input.backButtonLeavesApp = true;
             _tapDetector = GetComponent<LeanFingerTap>();
             
             _tapDetector.OnFinger.AddListener(OnTap);
