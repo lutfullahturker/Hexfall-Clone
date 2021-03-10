@@ -12,6 +12,9 @@ namespace Project.Scripts.MainMenu
             Input.backButtonLeavesApp = true;
         }
 
+        /// <summary>
+        /// Called when new game button clicked.
+        /// </summary>
         public void StartGame()
         {
             SceneManager.LoadSceneAsync(1);

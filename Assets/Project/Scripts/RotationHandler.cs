@@ -14,6 +14,12 @@ namespace Project.Scripts
             _matchChecker = gameObject.GetComponent<MatchChecker>();
         }
 
+        /// <summary>
+        /// Starts rotate operation and checks for matched hexagons after rotation.
+        /// </summary>
+        /// <param name="group">Hexagon group which will be rotated</param>
+        /// <param name="direction">Direction of rotation. Clockwise or CounterClockwise</param>
+        /// <returns></returns>
         public IEnumerator Rotate(HexGroup group, HexGroup.RotateDirection direction)
         {
             for (int i = 0; i < 3; i++)
@@ -32,6 +38,11 @@ namespace Project.Scripts
             }
         }
 
+        /// <summary>
+        /// Rotates the given hex group in counter clockwise.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
         private IEnumerator RotateCounterClockwise(HexGroup group)
         {
             const float rotateDuration = 0.3f;
@@ -51,6 +62,11 @@ namespace Project.Scripts
             yield return new WaitForSeconds(rotateDuration);
         }
 
+        /// <summary>
+        /// Rotates the given hex group in clockwise.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
         private IEnumerator RotateClockwise(HexGroup group)
         {
             const float rotateDuration = 0.3f;

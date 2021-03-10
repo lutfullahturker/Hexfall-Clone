@@ -8,15 +8,27 @@ namespace Project.Scripts
 {
     public class Hex : MonoBehaviour
     {
-        [HideInInspector] public Vector2Int tablePos;
-        [HideInInspector] public Color color;
-        [HideInInspector] public bool isBomb;
-        public Dictionary<NeighbourDirection, Vector2Int> neighbours;
+        #region Private
 
         private List<HexGroup> _allHexGroups;
         private int selectedHexGroupIndex;
         private bool isFirstAccessToHexGroupList = true;
         
+        #endregion
+
+        #region Public
+
+        [HideInInspector] public Vector2Int tablePos;
+        [HideInInspector] public Color color;
+        [HideInInspector] public bool isBomb;
+        public Dictionary<NeighbourDirection, Vector2Int> neighbours;
+
+        #endregion
+
+        /// <summary>
+        /// Returns next hex group in Hex's all hex groups.
+        /// </summary>
+        /// <returns></returns>
         public HexGroup GetNextHexGroup()
         {
             GetAllPossibleHexGroups();
@@ -39,17 +51,27 @@ namespace Project.Scripts
             return _allHexGroups[selectedHexGroupIndex];
         }
 
+        // Called when hex selection changed
+        /// <summary>
+        /// Resets Hex group selections of this hex.
+        /// </summary>
         public void ResetSelectedHexGroup()
         {
             selectedHexGroupIndex = 0;
             isFirstAccessToHexGroupList = true;
         }
 
+        /// <summary>
+        /// Removes all hexGroups of this hex. Use when hex position is moved.
+        /// </summary>
         public void ClearHexGroupList()
         {
             _allHexGroups = null;
         }
 
+        /// <summary>
+        /// Calculates and saves all possible hex groups from neighbour hex list. 
+        /// </summary>
         private void GetAllPossibleHexGroups()
         {
             if (_allHexGroups != null)
@@ -97,6 +119,13 @@ namespace Project.Scripts
             }
         }
 
+        /// <summary>
+        /// Returns true if this hex has neighbours in the given directions.
+        /// </summary>
+        /// <param name="keyList"></param>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
         private bool IsHexGroupValid(
             List<NeighbourDirection> keyList,
             NeighbourDirection first,

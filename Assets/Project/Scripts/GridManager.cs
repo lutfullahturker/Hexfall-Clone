@@ -11,6 +11,8 @@ namespace Project.Scripts
 {
     public class GridManager : MonoBehaviour
     {
+        #region Private
+
         private static GridManager _instance;
         private const float XOffset = 0.646f * 1.3f;
         private const float YOffset = 0.710f * 1.3f;
@@ -19,19 +21,29 @@ namespace Project.Scripts
         [SerializeField] private GameObject bombPrefab;
         private List<Color> _hexColorList;
 
+        #endregion
+
+        #region Public
+
         public static GridManager Instance => _instance;
         public List<List<GameObject>> gameTable;
         public List<HexGroup> allHexGroups;
         public List<HexTile> tiles;
         public Vector2Int gridSize = new Vector2Int(8, 9);
         [HideInInspector] public bool shouldBombCreated;
+
+        #endregion
         
+        #region Unity Methods
+
         private void Awake()
         {
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
-            } else {
+            }
+            else
+            {
                 _instance = this;
             }
         }
@@ -40,6 +52,7 @@ namespace Project.Scripts
         IEnumerator Start()
         {
             EventManager.Current.on1000Scored += On1000Score;
+
             _hexColorList = new List<Color>();
             gameTable = new List<List<GameObject>>();
             for (var i = 0; i < gridSize.x; ++i)
@@ -55,12 +68,14 @@ namespace Project.Scripts
                 }
             });
 
+            // Create game table
             CreateGrid();
-            allHexGroups = new HexGroupCalculator(gridSize.x,gridSize.y).GetHexGroupList();
-            
-            // check for match before game starts
+            // Calculate and save All possible hex groups in game table
+            allHexGroups = new HexGroupCalculator(gridSize.x, gridSize.y).GetHexGroupList();
+
+            // Check for match before game starts and don't count them as score
             var matchedHexGroups = matchChecker.GetMatchedHexGroups();
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.6f);
             if (matchedHexGroups.Count > 0)
                 StartCoroutine(matchChecker.OnHexGroupsMatched(matchedHexGroups, true));
         }
@@ -69,16 +84,28 @@ namespace Project.Scripts
         {
             EventManager.Current.on1000Scored -= On1000Score;
         }
+        
+        #endregion
 
+        #region Hexagon Operations
+
+        /// <summary>
+        /// Creates a new hexagon on specified table coordinates and sets all hexagon data.
+        /// </summary>
+        /// <param name="coordinates"></param>
+        /// <param name="withAnimation"></param>
+        /// <returns>New hexagon gameObject</returns>
         public GameObject CreateHexagon(Vector2Int coordinates, bool withAnimation = false)
         {
             var destPosition = CalculatePositionFromCoordinate(coordinates);
-            GameObject hexObj = Instantiate(shouldBombCreated ? bombPrefab : hexagonPrefab, destPosition , Quaternion.identity);
+            GameObject hexObj = Instantiate(shouldBombCreated ? bombPrefab : hexagonPrefab, destPosition,
+                Quaternion.identity);
             if (withAnimation)
             {
-                hexObj.transform.DOMoveY(9.4f,0);
+                hexObj.transform.DOMoveY(9.4f, 0);
                 hexObj.transform.DOMoveY(destPosition.y, 0.3f);
             }
+
             // Name the gameobject something sensible.
             hexObj.name = "Hex (" + coordinates.x + "," + coordinates.y + ")";
             hexObj.transform.SetParent(transform);
@@ -95,7 +122,12 @@ namespace Project.Scripts
 
             return hexObj;
         }
-        
+
+        /// <summary>
+        /// Moves a hexagon to specified destination coordinate and set all hexagon data for new position.
+        /// </summary>
+        /// <param name="sourceHex"></param>
+        /// <param name="destinationCoord"></param>
         public void MoveHexagon(Hex sourceHex, Vector2Int destinationCoord)
         {
             gameTable[destinationCoord.x][destinationCoord.y] = sourceHex.gameObject;
@@ -107,6 +139,11 @@ namespace Project.Scripts
             sourceHex.transform.DOMove(CalculatePositionFromCoordinate(destinationCoord), 0.3f);
         }
 
+        /// <summary>
+        /// Calculates and returns world Vector3 position from given game table coordinates. 
+        /// </summary>
+        /// <param name="coordinates"></param>
+        /// <returns>World position of given coordinates</returns>
         public Vector3 CalculatePositionFromCoordinate(Vector2Int coordinates)
         {
             float yPos = coordinates.y * YOffset;
@@ -120,16 +157,9 @@ namespace Project.Scripts
             return new Vector3(coordinates.x * XOffset, yPos);
         }
 
-        public GameObject GetHexGO(Vector2Int coord)
-        {
-            return gameTable[coord.x][coord.y];
-        }
-        
-        public GameObject GetHexGO(int x, int y)
-        {
-            return gameTable[x][y];
-        }
-
+        /// <summary>
+        /// Creates grid which game will play on.
+        /// </summary>
         private void CreateGrid()
         {
             for (int x = 0; x < gridSize.x; x++)
@@ -139,39 +169,36 @@ namespace Project.Scripts
                     gameTable[x].Add(CreateHexagon(new Vector2Int(x, y)));
                 }
             }
-            
+
             //Test method
             // TestNeighbour();
             // TestHexGroup();
         }
 
-        private void On1000Score()
-        {
-            shouldBombCreated = true;
-        }
-
-        private HexTile GetRandomColorHexagon(Vector3Int pos)
-        {
-            List<Color> disabledColors = new List<Color>();
-
-
-            var maxPos = new Vector2Int(gridSize.y - 1, gridSize.x - 1);
-            return null;
-        }
-
+        /// <summary>
+        /// Calculates all neighbour hexagons and their directions.
+        /// </summary>
+        /// <param name="posInTable"></param>
+        /// <returns>Dictionary that holds neighbour coordinates and directions</returns>
         private Dictionary<NeighbourDirection, Vector2Int> GetAllNeighbourHexObjects(Vector2Int posInTable)
         {
             List<Vector2Int> allPossibleNeighbours = new List<Vector2Int>();
             bool isOddCol = posInTable.x % 2 == 1;
 
             allPossibleNeighbours.Add(posInTable + Vector2Int.up); // top
-            allPossibleNeighbours.Add(posInTable + (isOddCol ? Vector2Int.left: Vector2Int.up + Vector2Int.left)); // leftTop
-            allPossibleNeighbours.Add(posInTable + (isOddCol ? Vector2Int.down + Vector2Int.left : Vector2Int.left)); // leftBottom
+            allPossibleNeighbours.Add(posInTable +
+                                      (isOddCol ? Vector2Int.left : Vector2Int.up + Vector2Int.left)); // leftTop
+            allPossibleNeighbours.Add(posInTable +
+                                      (isOddCol ? Vector2Int.down + Vector2Int.left : Vector2Int.left)); // leftBottom
             allPossibleNeighbours.Add(posInTable + Vector2Int.down); // bottom
-            allPossibleNeighbours.Add(posInTable + (isOddCol ? Vector2Int.right + Vector2Int.down : Vector2Int.right)); // rightBottom
-            allPossibleNeighbours.Add(posInTable + (isOddCol ? Vector2Int.right : Vector2Int.right + Vector2Int.up)); // rightTop
+            allPossibleNeighbours.Add(posInTable +
+                                      (isOddCol
+                                          ? Vector2Int.right + Vector2Int.down
+                                          : Vector2Int.right)); // rightBottom
+            allPossibleNeighbours.Add(posInTable +
+                                      (isOddCol ? Vector2Int.right : Vector2Int.right + Vector2Int.up)); // rightTop
 
-            Dictionary<NeighbourDirection, Vector2Int> result = new Dictionary<NeighbourDirection, Vector2Int> ();
+            Dictionary<NeighbourDirection, Vector2Int> result = new Dictionary<NeighbourDirection, Vector2Int>();
 
             var i = 0;
             foreach (var neighbour in allPossibleNeighbours)
@@ -200,11 +227,30 @@ namespace Project.Scripts
                             break;
                     }
                 }
+
                 ++i;
             }
+
             return result;
         }
+
+        #endregion
         
+        #region Event Callbacks
+
+        /// <summary>
+        /// Called every 1000 scores.
+        /// Sets shouldBombCreated for create a bomb hexagon.
+        /// </summary>
+        private void On1000Score()
+        {
+            shouldBombCreated = true;
+        }
+
+        #endregion
+
+        #region Test Methods
+
         // TEST Method for neighbour list correctivity
         private void TestNeighbour()
         {
@@ -213,32 +259,32 @@ namespace Project.Scripts
             {
                 gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
-            
+
             neighbours = gameTable[2][3].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
                 gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
-            
+
             neighbours = gameTable[7][2].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
                 gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
-            
+
             neighbours = gameTable[6][8].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
                 gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
-            
+
             neighbours = gameTable[0][7].GetComponent<Hex>().neighbours;
             foreach (var neighbour in neighbours)
             {
                 gameTable[neighbour.Value.x][neighbour.Value.y].GetComponent<SpriteRenderer>().color = Color.black;
             }
         }
-        
+
         // TEST Method for possible Hex groups
         private void TestHexGroup()
         {
@@ -246,37 +292,44 @@ namespace Project.Scripts
             {
                 gameTable[0][0].GetComponent<SpriteRenderer>().color = Color.black;
                 gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color =
+                    Color.white;
             }
-            
+
             hexGroup = gameTable[2][3].GetComponent<Hex>().GetSelectedHexGroup();
 
             {
                 gameTable[2][3].GetComponent<SpriteRenderer>().color = Color.black;
                 gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color =
+                    Color.white;
             }
-            
+
             hexGroup = gameTable[7][2].GetComponent<Hex>().GetSelectedHexGroup();
             {
                 gameTable[7][2].GetComponent<SpriteRenderer>().color = Color.black;
                 gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color =
+                    Color.white;
             }
-            
+
             hexGroup = gameTable[6][8].GetComponent<Hex>().GetSelectedHexGroup();
             {
                 gameTable[6][8].GetComponent<SpriteRenderer>().color = Color.black;
                 gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color =
+                    Color.white;
             }
-            
+
             hexGroup = gameTable[0][7].GetComponent<Hex>().GetSelectedHexGroup();
             {
                 gameTable[0][7].GetComponent<SpriteRenderer>().color = Color.black;
                 gameTable[hexGroup.firstHex.x][hexGroup.firstHex.y].GetComponent<SpriteRenderer>().color = Color.white;
-                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color = Color.white;
+                gameTable[hexGroup.secondHex.x][hexGroup.secondHex.y].GetComponent<SpriteRenderer>().color =
+                    Color.white;
             }
         }
+        
+        #endregion
     }
 }

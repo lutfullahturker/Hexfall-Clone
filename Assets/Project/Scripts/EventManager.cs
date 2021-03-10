@@ -29,6 +29,9 @@ namespace Project.Scripts
         
         public event Action on1000Scored;
 
+        /// <summary>
+        /// Called per 1000 score
+        /// </summary>
         public void ThousandScored()
         {
             on1000Scored?.Invoke();

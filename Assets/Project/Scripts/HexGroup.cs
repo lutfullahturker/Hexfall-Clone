@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Project.Scripts
 {
+    /// <summary>
+    /// Holds 3 hex coordinates and their directions
+    /// </summary>
     public class HexGroup
     {
         public Vector2Int mainHex;
@@ -30,6 +33,10 @@ namespace Project.Scripts
             secondHex = _secondHex;
         }
 
+        /// <summary>
+        /// Returns world position of center of this hexGroup.
+        /// </summary>
+        /// <returns></returns>
         public Vector3 GetCenterPositionOfGroup()
         {
             var mainHexPosition = GridManager.Instance.gameTable[mainHex.x][mainHex.y].transform.position;

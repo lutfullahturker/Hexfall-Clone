@@ -7,7 +7,10 @@ namespace Project.Scripts
 {
     public class Bomb : MonoBehaviour
     {
-        private int counterToExplode;
+        public int counterToExplode;
+        /// <summary>
+        /// Counter Text inside the bomb
+        /// </summary>
         private TextMesh countText;
             
         // Start is called before the first frame update
@@ -23,6 +26,11 @@ namespace Project.Scripts
         {
             EventManager.Current.onMoveCompleted -= onMoveCompleted;
         }
+        
+        /// <summary>
+        /// Called per Successful rotation and decreases the bombs count.
+        /// Triggers Bomb animation.
+        /// </summary>
         private void onMoveCompleted()
         {
             --counterToExplode;

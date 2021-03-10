@@ -8,17 +8,25 @@ namespace Project.Scripts
 {
     public class MatchChecker : MonoBehaviour
     {
+        #region Private
+        
         private const float SHAKE_EFFECT_DURATION = 1.0f;
         private const float SCALE_DOWN_DURATION = 0.5f;
-        private float EXPLOSION_DURATION => SHAKE_EFFECT_DURATION + SCALE_DOWN_DURATION + 0.1f;
-        private List<HexGroup> Groups => GridManager.Instance.allHexGroups;
         private GameManager _gameManager;
+        private List<HexGroup> Groups => GridManager.Instance.allHexGroups;
+        private float EXPLOSION_DURATION => SHAKE_EFFECT_DURATION + SCALE_DOWN_DURATION + 0.1f;
+
+        #endregion
 
         private void Start()
         {
             _gameManager = GetComponent<GameManager>();
         }
 
+        /// <summary>
+        /// Travels all hex groups in the game and finds all matched hex groups.
+        /// </summary>
+        /// <returns></returns>
         public List<HexGroup> GetMatchedHexGroups()
         {
             var table = GridManager.Instance.gameTable;
@@ -45,9 +53,16 @@ namespace Project.Scripts
             return result;
         }
 
+        /// <summary>
+        /// Called when one or more matched hex groups found.
+        /// Explodes matched Hexes, increases the score and refill exploded hex positions.
+        /// </summary>
+        /// <param name="matchedGroups"></param>
+        /// <param name="isPreGameMatch">If true, animations will be faster and scores don't count</param>
         public IEnumerator OnHexGroupsMatched(List<HexGroup> matchedGroups, bool isPreGameMatch = false)
         {
             var matchedHexSet = GetMatchedHexSet(matchedGroups);
+            // Explodes all matched hexes
             StartCoroutine(ExplodeMatchedHexes(matchedHexSet));
             if (isPreGameMatch)
                 Time.timeScale = 2.5f;
@@ -58,8 +73,10 @@ namespace Project.Scripts
                 _gameManager.Score += matchedHexSet.Count * 5;
             }
 
+            // Shift the top of exploded hexes and refill their places in game table
             yield return StartCoroutine(ShiftAndRefillExplodedPlaces());
 
+            // Check if new hexes have a match. If they have, do the same operations
             var newMatchedGroups = GetMatchedHexGroups();
             if (newMatchedGroups.Count > 0)
             {
@@ -69,6 +86,10 @@ namespace Project.Scripts
             Time.timeScale = 1;
         }
 
+        /// <summary>
+        /// Shifts the top neighbour of exploded hexes and refill remaining empty places in game table.
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator ShiftAndRefillExplodedPlaces()
         {
             var table = GridManager.Instance.gameTable;
@@ -80,10 +101,13 @@ namespace Project.Scripts
                 for (int y = 0; y < table[x].Count; y++)
                 {
                     GameObject hexGO = table[x][y];
+                    // Check if the place is empty and increase empty count
                     if (!hexGO)
                     {
                         ++emptyCellCount;
                     }
+                    // If this hex object is valid and this column has empty place until current place
+                    // Shift this hex to the bottom of this column
                     else if (emptyCellCount > 0)
                     {
                         GridManager.Instance.MoveHexagon(
@@ -122,6 +146,11 @@ namespace Project.Scripts
             return result;
         }
 
+        /// <summary>
+        /// Explodes and destroys with animation all hex game objects in the given matched hex set.
+        /// </summary>
+        /// <param name="matchedSet"></param>
+        /// <returns></returns>
         private IEnumerator ExplodeMatchedHexes(HashSet<Vector2Int> matchedSet)
         {
             var table = GridManager.Instance.gameTable;

@@ -24,6 +24,9 @@ namespace Project.Scripts.Helper
             return _groups;
         }
         
+        /// <summary>
+        /// Calculates all hex groups in game table depends on the sizes which are given in the constructor.
+        /// </summary>
         private void CalculateAllHexGroupsInTable()
         {
             _groups = new List<HexGroup>();

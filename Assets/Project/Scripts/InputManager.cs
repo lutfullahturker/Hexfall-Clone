@@ -34,6 +34,10 @@ namespace Project.Scripts
             _rightSwipeDetector.OnFinger.RemoveListener(OnRightSwipe);
         }
 
+        /// <summary>
+        /// Called when user taps the screen.
+        /// </summary>
+        /// <param name="finger"></param>
         private void OnTap(LeanFinger finger)
         {
             //We transform the touch position into word space from screen space and store it.
@@ -58,13 +62,13 @@ namespace Project.Scripts
         
         private void OnLeftSwipe(LeanFinger finger)
         {
-            // Debug.Log("Left Swiped");
+            Debug.Log("Left Swiped");
             EventManager.Current.Swiped(SwipeDirection.LeftSwipe, finger.GetStartWorldPosition(-10));
         }
         
         private void OnRightSwipe(LeanFinger finger)
         {
-            // Debug.Log("Right Swiped");
+            Debug.Log("Right Swiped");
             EventManager.Current.Swiped(SwipeDirection.RightSwipe, finger.GetStartWorldPosition(-10));
         }
     }
