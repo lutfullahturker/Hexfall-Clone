@@ -7,7 +7,7 @@ namespace Project.Scripts
 {
     public class Bomb : MonoBehaviour
     {
-        public int counterToExplode;
+        private int counterToExplode;
         /// <summary>
         /// Counter Text inside the bomb
         /// </summary>

@@ -3,7 +3,7 @@
     "m_SelectedPackage": {
         "deviceId": "0bb8d2610704",
         "name": "com.Vertigo.HexagonLutfullah",
-        "processId": 26789,
+        "processId": 18931,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -18,6 +18,12 @@
             "deviceId": "0bb8d2610704",
             "name": "com.Vertigo.HexagonLutfullah",
             "processId": 26789,
+            "exited": false
+        },
+        {
+            "deviceId": "0bb8d2610704",
+            "name": "com.Vertigo.HexagonLutfullah",
+            "processId": 18931,
             "exited": false
         }
     ],

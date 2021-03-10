@@ -11,7 +11,7 @@ namespace Project.Scripts
         #region Private
 
         [SerializeField] private GameObject highlightGameObject;
-        public int _score = 0;
+        private int _score = 0;
         private Vector2Int? _selectedHexPosition;
         private HexGroup _selectedHexGroup = null;
         private RotationHandler _rotationHandler;
