@@ -20,11 +20,32 @@ namespace Project.Scripts
             }
         }
 
-        public event Action onScoreUpdated;
+        public event Action<int> onScoreUpdated;
 
-        public void ScoreUpdated()
+        public void ScoreUpdated(int score)
         {
-            onScoreUpdated?.Invoke();
+            onScoreUpdated?.Invoke(score);
+        }
+        
+        public event Action on1000Scored;
+
+        public void ThousandScored()
+        {
+            on1000Scored?.Invoke();
+        }
+        
+        public event Action onMoveCompleted;
+
+        public void MoveCompleted()
+        {
+            onMoveCompleted?.Invoke();
+        }
+        
+        public event Action onGameOver;
+
+        public void GameOver()
+        {
+            onGameOver?.Invoke();
         }
 
         public event Action<GameObject> onHexagonTouched;

@@ -27,6 +27,7 @@ namespace Project.Scripts
                 if (matchedHexGroups.Count <= 0) continue;
 
                 yield return StartCoroutine(_matchChecker.OnHexGroupsMatched(matchedHexGroups));
+                EventManager.Current.MoveCompleted();
                 yield break;
             }
         }
