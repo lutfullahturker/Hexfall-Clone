@@ -10,21 +10,12 @@ namespace Project.Scripts
     {
         [HideInInspector] public Vector2Int tablePos;
         [HideInInspector] public Color color;
+        [HideInInspector] public bool isBomb;
         public Dictionary<NeighbourDirection, Vector2Int> neighbours;
 
         private List<HexGroup> _allHexGroups;
         private int selectedHexGroupIndex;
         private bool isFirstAccessToHexGroupList = true;
-
-        // Start is called before the first frame update
-        void Start()
-        {
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-        }
         
         public HexGroup GetNextHexGroup()
         {

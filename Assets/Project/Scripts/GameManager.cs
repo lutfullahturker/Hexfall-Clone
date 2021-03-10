@@ -9,46 +9,51 @@ namespace Project.Scripts
     public class GameManager : MonoBehaviour
     {
         [SerializeField] private GameObject highlightGameObject;
+        private int _score = 0;
+        private Vector2Int? _selectedHexPosition;
+        private HexGroup _selectedHexGroup = null;
+        private RotationHandler _rotationHandler;
+        private int divisionBy1000;
+        private bool stopInput;
+        private List<List<GameObject>> gameTable => GridManager.Instance.gameTable;
 
-        public static int Score
+        public int Score
         {
             get => _score;
             set
             {
                 _score = value;
-                EventManager.Current.ScoreUpdated();
+                if (divisionBy1000 != _score / 1000)
+                {
+                    EventManager.Current.ThousandScored();
+                }
+
+                divisionBy1000 = _score / 1000;
+                EventManager.Current.ScoreUpdated(_score);
             }
         }
 
-        private static int _score = 0;
-        private List<List<GameObject>> gameTable => GridManager.Instance.gameTable;
-        private Vector2Int? _selectedHexPosition;
-        private HexGroup _selectedHexGroup = null;
-        private bool _isHexGroupRotating = false;
-        private RotationHandler _rotationHandler;
 
         // Start is called before the first frame update
         void Start()
         {
             _rotationHandler = GetComponent<RotationHandler>();
+            EventManager.Current.onGameOver += OnGameOver;
             EventManager.Current.onHexagonTouched += OnTouchedHexagon;
             EventManager.Current.onSwiped += OnSwiped;
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-        }
-
         void OnDestroy()
         {
+            EventManager.Current.onGameOver -= OnGameOver;
             EventManager.Current.onHexagonTouched -= OnTouchedHexagon;
             EventManager.Current.onSwiped -= OnSwiped;
         }
 
         private IEnumerator RotateCoroutine(InputManager.SwipeDirection swipeDirection, Vector2 swipePos)
         {
-            _isHexGroupRotating = true;
+            stopInput = true;
+            highlightGameObject.SetActive(false);
             var rotateDirection =
                 GetRotateDirection(swipeDirection, _selectedHexGroup.GetCenterPositionOfGroup(), swipePos);
 
@@ -57,7 +62,8 @@ namespace Project.Scripts
                 yield return StartCoroutine(_rotationHandler.Rotate(_selectedHexGroup, rotateDirection));
             }
 
-            _isHexGroupRotating = false;
+            highlightGameObject.SetActive(true);
+            stopInput = false;
         }
 
         private HexGroup.RotateDirection GetRotateDirection(
@@ -81,9 +87,38 @@ namespace Project.Scripts
 
         #region Event Callbacks
 
+        private void OnGameOver()
+        {
+            stopInput = true;
+            DOTween.Sequence()
+                .Append(highlightGameObject.transform.DOScale(Vector3.zero, 1))
+                .OnComplete(() =>
+                {
+                    highlightGameObject.SetActive(false);
+                    stopInput = true;
+                });
+
+            foreach (var gameObjects in gameTable)
+            {
+                foreach (var hex in gameObjects)
+                {
+                    DOTween.Sequence()
+                        .Append(hex.transform.DOShakePosition(1))
+                        .Append(hex.transform.DOMoveY(-4, 1))
+                        .OnComplete(() =>
+                        {
+                            Destroy(hex);
+                            Time.timeScale = 0;
+                        });
+                }
+            }
+        }
+
         private void OnTouchedHexagon(GameObject touchedHex)
         {
             // Debug.Log("Touched GO: " + touchedHex.transform.name);
+            if (stopInput)
+                return;
 
             var hexComponent = touchedHex.GetComponent<Hex>();
             _selectedHexGroup = hexComponent.GetNextHexGroup();
@@ -113,10 +148,8 @@ namespace Project.Scripts
 
         private void OnSwiped(InputManager.SwipeDirection swipeDirection, Vector2 swipePosition)
         {
-            if (_isHexGroupRotating || _selectedHexGroup == null || !_selectedHexPosition.HasValue)
-            {
+            if (stopInput || _selectedHexGroup == null || !_selectedHexPosition.HasValue)
                 return;
-            }
 
             StartCoroutine(RotateCoroutine(swipeDirection, swipePosition));
         }
