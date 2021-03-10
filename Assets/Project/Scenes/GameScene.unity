@@ -463,7 +463,7 @@ Camera:
   far clip plane: 100
   field of view: 60
   orthographic: 1
-  orthographic size: 7
+  orthographic size: 8
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1140,10 +1140,10 @@ RectTransform:
   m_Father: {fileID: 1078960305}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -46}
-  m_SizeDelta: {x: 0, y: 89.7158}
+  m_AnchorMin: {x: 0, y: 0.89029187}
+  m_AnchorMax: {x: 1, y: 0.93900007}
+  m_AnchoredPosition: {x: -0.010986328, y: -1}
+  m_SizeDelta: {x: 0, y: -4.2842026}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &1567046902
 GameObject:
