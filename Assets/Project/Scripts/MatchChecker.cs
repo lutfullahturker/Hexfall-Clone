@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -11,10 +12,11 @@ namespace Project.Scripts
         private const float SCALE_DOWN_DURATION = 0.5f;
         private float EXPLOSION_DURATION => SHAKE_EFFECT_DURATION + SCALE_DOWN_DURATION + 0.1f;
         private List<HexGroup> Groups => GridManager.Instance.allHexGroups;
+        private GameManager _gameManager;
 
-        // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
+            _gameManager = GetComponent<GameManager>();
         }
 
         public List<HexGroup> GetMatchedHexGroups()
@@ -43,20 +45,28 @@ namespace Project.Scripts
             return result;
         }
 
-        public IEnumerator OnHexGroupsMatched(List<HexGroup> matchedGroups)
+        public IEnumerator OnHexGroupsMatched(List<HexGroup> matchedGroups, bool isPreGameMatch = false)
         {
             var matchedHexSet = GetMatchedHexSet(matchedGroups);
-            GameManager.Score += matchedHexSet.Count * 5;
             StartCoroutine(ExplodeMatchedHexes(matchedHexSet));
+            if (isPreGameMatch)
+                Time.timeScale = 2.5f;
             yield return new WaitForSeconds(EXPLOSION_DURATION);
+
+            if (!isPreGameMatch)
+            {
+                _gameManager.Score += matchedHexSet.Count * 5;
+            }
 
             yield return StartCoroutine(ShiftAndRefillExplodedPlaces());
 
             var newMatchedGroups = GetMatchedHexGroups();
             if (newMatchedGroups.Count > 0)
             {
-                yield return StartCoroutine(OnHexGroupsMatched(newMatchedGroups));
+                yield return StartCoroutine(OnHexGroupsMatched(newMatchedGroups, isPreGameMatch));
             }
+
+            Time.timeScale = 1;
         }
 
         private IEnumerator ShiftAndRefillExplodedPlaces()

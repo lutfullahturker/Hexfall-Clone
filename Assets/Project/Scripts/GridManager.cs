@@ -1,42 +1,46 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using Project.Scripts.Helper;
 using Project.Scripts.ScriptableObject;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Project.Scripts
 {
     public class GridManager : MonoBehaviour
     {
         private static GridManager _instance;
-        public static GridManager Instance => _instance;
+        private const float XOffset = 0.646f * 1.3f;
+        private const float YOffset = 0.710f * 1.3f;
+        [SerializeField] private MatchChecker matchChecker;
+        [SerializeField] private GameObject hexagonPrefab;
+        [SerializeField] private GameObject bombPrefab;
+        private List<Color> _hexColorList;
 
+        public static GridManager Instance => _instance;
         public List<List<GameObject>> gameTable;
         public List<HexGroup> allHexGroups;
         public List<HexTile> tiles;
         public Vector2Int gridSize = new Vector2Int(8, 9);
-        [SerializeField] private GameObject hexagonPrefab;
-        [SerializeField] private GameObject bombPrefab;
-
-        private readonly float xOffset = 0.646f * 1.3f;
-        private readonly float yOffset = 0.710f * 1.3f;
-        private List<Color> hexColorList;
+        [HideInInspector] public bool shouldBombCreated;
         
         private void Awake()
         {
             if (_instance != null && _instance != this)
             {
-                Destroy(this.gameObject);
+                Destroy(gameObject);
             } else {
                 _instance = this;
             }
         }
 
         // Start is called before the first frame update
-        void Start()
+        IEnumerator Start()
         {
-            hexColorList = new List<Color>();
+            EventManager.Current.on1000Scored += On1000Score;
+            _hexColorList = new List<Color>();
             gameTable = new List<List<GameObject>>();
             for (var i = 0; i < gridSize.x; ++i)
             {
@@ -47,19 +51,29 @@ namespace Project.Scripts
             {
                 if (tile.type == TileType.Hexagon)
                 {
-                    hexColorList.Add(tile.color);
+                    _hexColorList.Add(tile.color);
                 }
             });
 
             CreateGrid();
             allHexGroups = new HexGroupCalculator(gridSize.x,gridSize.y).GetHexGroupList();
+            
+            // check for match before game starts
+            var matchedHexGroups = matchChecker.GetMatchedHexGroups();
+            yield return new WaitForSeconds(1);
+            if (matchedHexGroups.Count > 0)
+                StartCoroutine(matchChecker.OnHexGroupsMatched(matchedHexGroups, true));
+        }
+
+        private void OnDestroy()
+        {
+            EventManager.Current.on1000Scored -= On1000Score;
         }
 
         public GameObject CreateHexagon(Vector2Int coordinates, bool withAnimation = false)
         {
-            List<HexTile> hexagonList = tiles.FindAll(tile => tile.type == TileType.Hexagon);
             var destPosition = CalculatePositionFromCoordinate(coordinates);
-            GameObject hexObj = Instantiate(hexagonPrefab, destPosition , Quaternion.identity);
+            GameObject hexObj = Instantiate(shouldBombCreated ? bombPrefab : hexagonPrefab, destPosition , Quaternion.identity);
             if (withAnimation)
             {
                 hexObj.transform.DOMoveY(9.4f,0);
@@ -69,12 +83,15 @@ namespace Project.Scripts
             hexObj.name = "Hex (" + coordinates.x + "," + coordinates.y + ")";
             hexObj.transform.SetParent(transform);
 
-            var randomColoredHex = hexagonList[Random.Range(0, hexagonList.Count)];
-            hexObj.GetComponent<SpriteRenderer>().color = randomColoredHex.color;
+            var randomColor = _hexColorList[Random.Range(0, _hexColorList.Count)];
+            hexObj.GetComponent<SpriteRenderer>().color = randomColor;
             var hexData = hexObj.GetComponent<Hex>();
-            hexData.color = randomColoredHex.color;
+            hexData.color = randomColor;
             hexData.tablePos = coordinates;
             hexData.neighbours = GetAllNeighbourHexObjects(coordinates);
+            hexData.isBomb = shouldBombCreated;
+
+            shouldBombCreated = false;
 
             return hexObj;
         }
@@ -92,15 +109,15 @@ namespace Project.Scripts
 
         public Vector3 CalculatePositionFromCoordinate(Vector2Int coordinates)
         {
-            float yPos = coordinates.y * yOffset;
+            float yPos = coordinates.y * YOffset;
 
             // Is an odd column?
             if (coordinates.x % 2 == 1)
             {
-                yPos -= yOffset / 2f;
+                yPos -= YOffset / 2f;
             }
 
-            return new Vector3(coordinates.x * xOffset, yPos);
+            return new Vector3(coordinates.x * XOffset, yPos);
         }
 
         public GameObject GetHexGO(Vector2Int coord)
@@ -126,6 +143,11 @@ namespace Project.Scripts
             //Test method
             // TestNeighbour();
             // TestHexGroup();
+        }
+
+        private void On1000Score()
+        {
+            shouldBombCreated = true;
         }
 
         private HexTile GetRandomColorHexagon(Vector3Int pos)
